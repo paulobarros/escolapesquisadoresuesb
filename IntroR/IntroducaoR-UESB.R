@@ -130,11 +130,14 @@ ratos %>% summary()
 
 # Agrupando os dados por animais
 
-ratos %>% group_by(rato) %>% summarise(media = mean(peso), dp = sd(peso), min = min(peso), max = max(peso))
+ratos %>% group_by(rato) %>% 
+  summarise(media = mean(peso), dp = sd(peso), min = min(peso), max = max(peso))
 
 # Descritivas desconsiderando dados perdidos (NA's)
 
-ratos %>% group_by(rato) %>% summarise(media = mean(peso, na.rm = TRUE), dp = sd(peso, na.rm = TRUE), min = min(peso, na.rm = TRUE), max = max(peso, na.rm = TRUE))
+ratos %>% group_by(rato) %>% 
+  summarise(media = mean(peso, na.rm = TRUE), dp = sd(peso, na.rm = TRUE), 
+            min = min(peso, na.rm = TRUE), max = max(peso, na.rm = TRUE))
 
 
 
@@ -155,27 +158,27 @@ mean(testeZero)
 
 # Contando dados perdidos
 
-ratos %>% select(everything()) %>% summarise_all(list(~sum(is.na(.))))
+ratos %>% summarise_all(list(~sum(is.na(.))))
 
 # Contando o número de individuos
 
-ratos %>% select(rato) %>% distinct()
+ratos %>% dplyr::select(rato) %>% distinct()
 
-ratos %>% select(rato) %>% distinct() %>% tally()
+ratos %>% dplyr::select(rato) %>% distinct() %>% tally()
 
 # Eliminando individuos com NA
 
 # Quais animais possuem dados perdidos?
 
-ratos %>% filter(is.na(peso)) %>% select(rato) %>% distinct()
+ratos %>% filter(is.na(peso)) %>% dplyr::select(rato) %>% distinct()
 
 # Filtrando animais com dados perdidos. Ainda algum animal com NA?
 
-ratos %>% filter(rato != 17 & rato != 18) %>% select(everything()) %>% summarise_all(list(~sum(is.na(.))))
+ratos %>% filter(rato != 17 & rato != 18) %>% dplyr::select(everything()) %>% summarise_all(list(~sum(is.na(.))))
 
 # Quantos animais após filtro?
 
-ratos %>% filter(rato != 17 & rato != 18) %>% select(rato) %>% distinct() %>% tally()
+ratos %>% filter(rato != 17 & rato != 18) %>% dplyr::select(rato) %>% distinct() %>% tally()
 
 
 # Criando outro data frame com os dados sem NAs
@@ -189,32 +192,9 @@ ratos_full <- ratos %>% filter(rato != 17 & rato != 18)
 ratos_full %>% group_by(rato) %>% summarise(media = mean(peso), dp = sd(peso), min = min(peso), max = max(peso))
 
 
-ratos_full %>% filter(rato == 19)
-
-
 ## Uma imagem vale mais que mil tabelas... ####
 
-boxplot(peso ~ rato, ratos_full)
-
-
 ratos_full %>% 
-  ggplot(aes(y = peso, x = as.factor(rato))) +
-  geom_boxplot(aes(fill = as.factor(dieta))) +
-  labs(title = "Pesos de Ratos submetidos a diferentes dietas",
-       x = "Indivíduos",
-       y = "Peso(g)") + theme_classic()
-
-
-ratos_full %>% 
-  ggplot(aes(y = peso, x = as.factor(rato))) +
-  geom_boxplot(aes(fill = as.factor(dieta))) +
-  labs(title = "Pesos de Ratos submetidos a diferentes dietas",
-       x = "Indivíduos",
-       y = "Peso(g)") + 
-  scale_fill_grey() + theme_classic()
- 
-
-ratos %>% 
   ggplot(aes(y = peso, x = as.factor(dieta))) +
   geom_boxplot(aes(fill = as.factor(dieta))) +
   labs(title = "Pesos de Ratos submetidos a diferentes dietas",
@@ -222,11 +202,17 @@ ratos %>%
        y = "Peso(g)", fill = "Dietas") + theme_classic()
 
 
- 
-# Como lidar com outliers?? ####
 
 ratos_full %>% filter(rato == 19)
 
+
+
+# Como lidar com outliers?? ####
+
+
+ratos_full %>% filter(rato == 19 & tempo == 44)
+
+ratos_full %>% filter(rato != 19)
 
 ratos_clean <- ratos_full %>% filter(rato != 19)
 
@@ -238,17 +224,16 @@ ratos_clean %>%
        y = "Peso(g)", fill="Dietas") + theme_classic()
 
 
-
 # Criando novas variaveis a partir de existentes
 
 head(ratos_clean)
 
-pi <- ratos_clean %>% filter(tempo == 1) %>% select(rato,dieta,peso) %>% rename(.,p_inicial = peso )
-pf <- ratos_clean %>% filter(tempo == 64) %>% select(rato,dieta,peso) %>% rename(.,p_final = peso )
+pi <- ratos_clean %>% filter(tempo == 1) %>% dplyr::select(rato,dieta,peso) %>% rename(.,p_inicial = peso )
+pf <- ratos_clean %>% filter(tempo == 64) %>% dplyr::select(rato,dieta,peso) %>% rename(.,p_final = peso )
   
 
 ratos_clean %>% 
-  select(rato, dieta) %>% 
+  dplyr::select(rato, dieta) %>% 
   distinct() %>% 
   left_join(., pi, by = c("rato","dieta")) %>%
   left_join(., pf, by = c("rato","dieta")) %>%
@@ -256,7 +241,7 @@ ratos_clean %>%
 
 ratos_final <- 
   ratos_clean %>% 
-  select(rato, dieta) %>% 
+  dplyr::select(rato, dieta) %>% 
   distinct() %>% 
   left_join(., pi, by = c("rato","dieta")) %>%
   left_join(., pf, by = c("rato","dieta")) %>%
@@ -274,7 +259,9 @@ ratos_final %>%
 library(rstatix)
 library(ggpubr)
 
-ratos_final %>% group_by(dieta) %>% get_summary_stats(p_inicial,p_final,ganho,type="common")
+ratos_final %>% 
+  group_by(dieta) %>% 
+  get_summary_stats(p_inicial,p_final,ganho,type="common")
 
 
 ratos_final %>% 
@@ -286,6 +273,20 @@ ratos_final %>%
   theme_classic()
   
 
+
+
+ratos_final %>% filter(rato != 11) %>%
+  ggplot(aes(y = ganho, x = as.factor(dieta))) +
+  geom_boxplot(aes(fill = as.factor(dieta))) +
+  labs(title = "Pesos de Ratos submetidos a diferentes dietas",
+       x = "Dietas",
+       y = "Ganho de peso(g)", fill="Dietas") +
+  theme_classic()
+
+ratos_final %>% filter(dieta == 2)
+
+
+ratos_final <- ratos_final %>% filter(rato != 11)
 
 ## ANOVA ####
 # Analise de Variância
@@ -299,7 +300,9 @@ ratos_final %>%
 
 ratos_final %>% group_by(dieta) %>% shapiro_test(ganho)
 
-ratos_clean %>% ggqqplot(.,"peso", facet.by= c("dieta","rato")) 
+
+
+ratos_clean %>% ggqqplot(.,"peso", facet.by= c("dieta")) 
 
 
 
@@ -309,9 +312,6 @@ ratos_clean %>% ggqqplot(.,"peso", facet.by= c("dieta","rato"))
 # Ho = as variâncias são iguais (homocedasticas/homogêneas).
 
 ratos_final %>% levene_test(ganho ~ as.factor(dieta))
-
-
-ratos_final %>% dplyr::filter(rato != 11) %>% levene_test(ganho ~ as.factor(dieta))
 
 
 
@@ -333,21 +333,24 @@ hsd <- ratos_final %>%
 
 # Plotando resultador do teste de Tukey
 
-
 ratos_final %>% 
-  ggplot(aes(y = ganho, x = as.factor(dieta), fill = as.factor(dieta)),color = "black") +
-  geom_boxplot(alpha  = 0.8) +
+  group_by(dieta) %>% 
+  get_summary_stats(ganho,type="common") %>% 
+  mutate(wisk = mean + se) %>% mutate(tuk = c("b","a","b")) %>%
+  ggplot(aes(y = mean, x = as.factor(dieta), fill = as.factor(dieta)),color = "black") +
+  geom_bar(stat = "identity",  alpha  = 0.8) +
+  geom_errorbar(aes(ymin = min - se, ymax = max + se), width = .1) +
   scale_fill_manual(values = c("#A0815F", "#5FA081", "#815FA0")) +
   theme_classic() +
-  annotate("text",label = "b", x = 1, y = 40, size = 4.5, vjust = -0.1) +
-  annotate("text",label = "a", x = 2, y = 93,size = 4.5, vjust = -0.1) +
-  annotate("text",label = "ab", x = 3, y = 61,size = 4.5, vjust = -0.1) +
+  annotate("text",label = "b", x = 1, y = 48, size = 4.5) +
+  annotate("text",label = "a", x = 2, y = 105,size = 4.5) +
+  annotate("text",label = "b", x = 3, y = 75,size = 4.5) +
   theme(legend.position="bottom",text = element_text(family = "Source Sans Pro", size = 14), 
         plot.title = element_text(face = "bold"),axis.text.x = element_blank(), axis.ticks.x = element_blank()) +
   labs(x = element_blank(), y = "Ganho de peso (g)", 
        title = "Ratos submetidos a diferentes dietas",
        fill = "Dietas",
-       subtitle = expression(paste("Anova, ",italic(F),"(2,13) = 8.06, ",italic(p < 0.05))),
+       subtitle = expression(paste("Anova, ",italic(F),"(2,12) = 20.66, ",italic(p < 0.01))),
        caption = expression(paste(italic('post-hoc test'),":",bold('Tukey HSD'))))
 
 
@@ -360,33 +363,6 @@ ratos_final %>%
 
 
 
-
-
-
-
-#Cause and Effect Diagram or Fish- bone Sample
-#install.packages("qcc")
-library("qcc")
-
-#Effect
-effect<-"Less Productivity"
-
-#Causes
-causes.head<-c("Measurement", "Material", "Methods", "Environment", "Manpower", "Machines")
-
-#Individual Causes
-causes<-vector(mode = "list", length = length(causes.head))
-causes[1]<-list(c("Lab error", "Contamination"))
-causes[2]<-list(c("Raw Material", "Additive"))
-causes[3]<-list(c("Sampling", "Analytical Procedure"))
-causes[4]<-list(c("Rust near sample point"))
-causes[5]<-list(c("Poor analyst","No guidance"))
-causes[6]<-list(c("Leakage", "breakdown"))
-
-#Fishbone Diagram
-#install.packages("SixSigma")
-library("SixSigma")
-ss.ceDiag(effect,causes.head,causes,sub="ABC Pvt. Ltd",ss.col = c("","red"))
 
 
 
